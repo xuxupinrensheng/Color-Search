@@ -98,6 +98,33 @@ const App: React.FC = () => {
     });
   };
 
+  // Centralized Error Handling Helper
+  const handleError = (error: any, defaultMsg: string) => {
+    console.error("Operation failed:", error);
+    let msg = error.message || defaultMsg;
+    
+    // Check if message is raw JSON (API error often comes like this)
+    if (typeof msg === 'string' && msg.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(msg);
+        if (parsed.error && parsed.error.message) {
+          msg = parsed.error.message;
+        }
+      } catch (e) {
+        // use original msg
+      }
+    }
+
+    // Check for specific API Key issues
+    if (msg.includes("API key not valid") || msg.includes("API_KEY_INVALID")) {
+      msg = "Configuration Error: The API Key in Netlify is invalid. Please check Site Settings > Environment Variables > API_KEY.";
+    } else if (msg.includes("403")) {
+       msg = "Access Denied: The API Key may have restrictions preventing this request.";
+    }
+
+    setErrorMsg(msg);
+  };
+
   const handleCodeSearch = async (codeToSearch?: string) => {
     const query = codeToSearch || codeInput;
     if (!query.trim()) return;
@@ -111,8 +138,7 @@ const App: React.FC = () => {
       setResults([data]);
       addToHistory(data);
     } catch (error: any) {
-      console.error(error);
-      setErrorMsg(error.message || "Could not find color. Please check the code and try again.");
+      handleError(error, "Could not find color. Please check the code and try again.");
     } finally {
       setLoading(false);
     }
@@ -185,8 +211,7 @@ const App: React.FC = () => {
         setErrorMsg("No colors identified in the image. Try better lighting.");
       }
     } catch (error: any) {
-      console.error(error);
-      setErrorMsg(error.message || "Failed to analyze image.");
+      handleError(error, "Failed to analyze image.");
     } finally {
       setLoading(false);
     }
@@ -211,8 +236,7 @@ const App: React.FC = () => {
       setResults([data]);
       addToHistory(data);
     } catch (error: any) {
-      console.error(error);
-      setErrorMsg(error.message || "Could not match color values.");
+      handleError(error, "Could not match color values.");
     } finally {
       setLoading(false);
     }
@@ -244,7 +268,7 @@ const App: React.FC = () => {
       </div>
 
       {errorMsg && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center text-sm font-medium animate-fade-in">
+        <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center text-sm font-medium animate-fade-in break-words">
           {errorMsg}
         </div>
       )}
@@ -349,7 +373,7 @@ const App: React.FC = () => {
       )}
 
       {errorMsg && (
-         <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center text-sm font-medium animate-fade-in mb-4 w-full">
+         <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center text-sm font-medium animate-fade-in mb-4 w-full break-words">
            {errorMsg}
          </div>
       )}
@@ -483,7 +507,7 @@ const App: React.FC = () => {
       </div>
 
       {errorMsg && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center text-sm font-medium animate-fade-in">
+        <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-center text-sm font-medium animate-fade-in break-words">
           {errorMsg}
         </div>
       )}
