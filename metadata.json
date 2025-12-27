@@ -1,0 +1,7 @@
+{
+  "name": "ChromaMatch",
+  "description": "A professional color library search tool matching Pantone and RAL standards using AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
